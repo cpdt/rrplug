@@ -16,20 +16,19 @@ macro_rules! call_sq_function {
                 use rrplug::wrappers::squirrel::PushToSquirrelVm; // weird
                 let mut args_amount = 1;
 
-                let obj = Box::new(std::mem::MaybeUninit::<$crate::bindings::squirreldatatypes::SQObject>::zeroed());
-                let ptr = Box::leak(obj).as_mut_ptr();
+                let mut obj = std::mem::MaybeUninit::uninit();
 
                 let function_name = $crate::to_sq_string!(std::convert::Into::<String>::into($function_name));
 
                 let result = unsafe {
-                    ($sqfunctions.sq_getfunction)($sqvm, function_name.as_ptr(), ptr, std::ptr::null())
+                    ($sqfunctions.sq_getfunction)($sqvm, function_name.as_ptr(), obj.as_mut_ptr(), std::ptr::null())
                 };
 
                 if result != 0 {
                     Err($crate::wrappers::errors::CallError::FunctionNotFound(function_name.to_string_lossy().into())) // totaly safe :clueless:
                 } else {
                     unsafe {
-                        ($sqfunctions.sq_pushobject)($sqvm, ptr);
+                        ($sqfunctions.sq_pushobject)($sqvm, ptr.as_mut_ptr());
                         ($sqfunctions.sq_pushroottable)($sqvm);
 
                         $(
