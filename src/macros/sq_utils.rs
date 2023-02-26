@@ -28,7 +28,7 @@ macro_rules! call_sq_function {
                     Err($crate::wrappers::errors::CallError::FunctionNotFound(function_name.to_string_lossy().into())) // totaly safe :clueless:
                 } else {
                     unsafe {
-                        ($sqfunctions.sq_pushobject)($sqvm, ptr.as_mut_ptr());
+                        ($sqfunctions.sq_pushobject)($sqvm, obj.as_mut_ptr());
                         ($sqfunctions.sq_pushroottable)($sqvm);
 
                         $(
@@ -41,8 +41,6 @@ macro_rules! call_sq_function {
                         } else {
                             Ok(())
                         };
-
-                        _ = *ptr; // drop?
 
                         result
                     }
