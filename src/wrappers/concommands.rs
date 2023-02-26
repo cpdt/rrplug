@@ -32,8 +32,7 @@ impl From<*const CCommand> for CCommandResult {
             if ccommand.m_nArgv0Size == 0 {
                 (Vec::new(), "".to_string())
             } else {
-                let buffer = ccommand.m_pArgSBuffer.to_vec().as_ptr();
-                let whole_command = CStr::from_ptr(buffer).to_string_lossy().to_string();
+                let whole_command = CStr::from_ptr(&ccommand.m_pArgSBuffer[0]).to_string_lossy().to_string();
                 let mut whole_command = whole_command.split_whitespace();
 
                 let command = whole_command.next().unwrap_or_default().into();
@@ -65,12 +64,11 @@ impl RegisterConCommands {
         help_string: String,
         flags: i32,
     ) -> Result<(), RegisterError> {
-        let name = Box::new(to_sq_string!(name).into_bytes_with_nul()).into_raw_parts();
-        let name_ptr = name.0 as *mut i8;
+        let name = to_sq_string!(name);
+        let name_ptr = name.as_ptr();
 
-        let help_string =
-            Box::new(to_sq_string!(help_string).into_bytes_with_nul()).into_raw_parts();
-        let help_string_ptr = help_string.0 as *mut i8;
+        let help_string = to_sq_string!(help_string);
+        let help_string_ptr = help_string.as_ptr();
 
         let command: *mut ConCommand = unsafe {
             std::mem::transmute((CREATE_OBJECT_FUNC

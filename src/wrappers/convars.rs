@@ -128,19 +128,9 @@ impl ConVarStruct {
         debug_assert!(!register_info.name.is_empty());
         debug_assert!(!register_info.default_value.is_empty());
 
-        // the following stuff may still leak memory
-        // has to be investigated
-
-        let (name_ptr, _, _) =
-            Box::new(to_sq_string!(register_info.name).into_bytes_with_nul()).into_raw_parts();
-
-        let (default_value_ptr, _, _) =
-            Box::new(to_sq_string!(register_info.default_value).into_bytes_with_nul())
-                .into_raw_parts();
-
-        let (help_string_ptr, _, _) =
-            Box::new(to_sq_string!(register_info.help_string).into_bytes_with_nul())
-                .into_raw_parts();
+        let name = to_sq_string!(register_info.name);
+        let default_value = to_sq_string!(register_info.default_value);
+        let help_string = to_sq_string!(register_info.help_string);
 
         unsafe {
             (engine_data
@@ -148,10 +138,10 @@ impl ConVarStruct {
                 .convar_register
                 .ok_or(RegisterError::NoneFunction)?)(
                 self.inner,
-                name_ptr as *mut i8,
-                default_value_ptr as *mut i8,
+                name.as_ptr(),
+                default_value.as_ptr(),
                 register_info.flags,
-                help_string_ptr as *mut i8,
+                help_string.as_ptr(),
                 register_info.bmin,
                 register_info.fmin,
                 register_info.bmax,
